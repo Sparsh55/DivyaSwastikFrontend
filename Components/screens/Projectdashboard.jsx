@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback, useRef, useState } from "react";
 import {
   View,
   Text,
@@ -8,24 +8,27 @@ import {
   Pressable,
   Animated,
   Alert,
+  Dimensions,
   StatusBar,
 } from "react-native";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import { useSelector } from "react-redux";
+import axios from "axios";
+import { useFocusEffect } from "@react-navigation/native";
 
+const API_BASE_URL = "http://192.168.81.224:5000/api";
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
+const screenWidth = Dimensions.get("window").width;
 
 const Card = ({ title, icon, subtitle, onPress }) => {
-  const scaleValue = React.useRef(new Animated.Value(1)).current;
-  const [pressed, setPressed] = React.useState(false);
+  const scaleValue = useRef(new Animated.Value(1)).current;
+  const [pressed, setPressed] = useState(false);
 
   const onPressIn = () => {
     setPressed(true);
     Animated.spring(scaleValue, {
       toValue: 0.96,
       useNativeDriver: true,
-      friction: 4,
-      tension: 100,
     }).start();
   };
 
@@ -34,8 +37,6 @@ const Card = ({ title, icon, subtitle, onPress }) => {
     Animated.spring(scaleValue, {
       toValue: 1,
       useNativeDriver: true,
-      friction: 4,
-      tension: 100,
     }).start();
   };
 
@@ -48,7 +49,6 @@ const Card = ({ title, icon, subtitle, onPress }) => {
         styles.card,
         {
           transform: [{ scale: scaleValue }],
-          backgroundColor: "#ff6700",
           shadowOpacity: pressed ? 0.65 : 0.45,
           elevation: pressed ? 16 : 12,
         },
@@ -71,116 +71,144 @@ const Card = ({ title, icon, subtitle, onPress }) => {
   );
 };
 
-const ProjectDashboard = ({  navigation }) => {
+const ProjectDashboard = ({ navigation }) => {
   const currentProject = useSelector((state) => state.project.currentProject);
 
+  const projectId = currentProject?._id;
   const projectName = currentProject?.name || "Unnamed Project";
   const startDate = currentProject?.date?.split("T")[0] || "N/A";
   const projectStatus = currentProject?.status || "Unknown";
-  const handleDelete = () => {
+
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBackgroundColor("#ff9933");
+      StatusBar.setBarStyle("light-content");
+
+      return () => {
+        StatusBar.setBackgroundColor("transparent");
+        StatusBar.setBarStyle("dark-content");
+      };
+    }, [])
+  );
+
+  const handleDelete = async () => {
     Alert.alert(
       "Delete Project",
-      "Are you sure you want to delete this project? This action cannot be undone.",
+      "Are you sure you want to delete this project?",
       [
-        {
-          text: "Cancel",
-          style: "cancel",
-          onPress: () => console.log("Cancel pressed"),
-        },
+        { text: "Cancel", style: "cancel" },
         {
           text: "Delete",
           style: "destructive",
-          onPress: () => navigation.navigate("ManageProjects"),
+          onPress: async () => {
+            try {
+              await axios.delete(`${API_BASE_URL}/projects/${projectId}`);
+              Alert.alert("Deleted", "Project deleted successfully");
+              navigation.navigate("ManageProjects");
+            } catch (error) {
+              Alert.alert(
+                "Error",
+                error.response?.data?.message || "Failed to delete project"
+              );
+            }
+          },
         },
-      ],
-      { cancelable: true }
+      ]
     );
   };
 
+  const getStatusStyle = () => {
+    switch (projectStatus) {
+      case "active":
+        return {
+          bg: "#43a047",
+          textColor: "#ffffff",
+          icon: "check-circle",
+        };
+      case "on-hold":
+        return {
+          bg: "#fbc02d",
+          textColor: "#000",
+          icon: "pause-circle",
+        };
+      case "completed":
+        return {
+          bg: "#2196f3",
+          textColor: "#ffffff",
+          icon: "close-circle",
+        };
+      case "cancelled":
+        return {
+          bg: "#e53935",
+          textColor: "#ffffff",
+          icon: "cancel",
+        };
+      default:
+        return {
+          bg: "#9e9e9e",
+          textColor: "#ffffff",
+          icon: "help-circle",
+        };
+    }
+  };
+
+  const statusStyle = getStatusStyle();
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar backgroundColor="#f8f9fa" barStyle="dark-content" />
-      <ScrollView
-        contentContainerStyle={styles.scrollContainer}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* <View style={styles.header}>
-          <Text style={styles.heading}>Project Dashboard</Text>
-        </View> */}
-
-        {/* Single expanded white card containing both project info and orange cards */}
-        <View style={styles.expandedProjectCard}>
-          {/* Project info section - keeping your original design */}
-          <View style={styles.projectPill}>
-            <View style={styles.projectPillTopRow}>
-              <Text
-                style={styles.projectPillName}
-                numberOfLines={1}
-                ellipsizeMode="tail"
-              >
+      <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+        <View>
+          <View style={styles.uShapeContainer}>
+            <View style={styles.uShapeCard}>
+              <Text style={styles.projectTitle} numberOfLines={1}>
                 {projectName}
               </Text>
-              <Pressable
-                onPress={handleDelete}
-                style={({ pressed }) => [
-                  styles.deleteButton,
-                  pressed && styles.deleteButtonPressed,
-                ]}
-              >
+              <Text style={styles.projectDateCentered}>
                 <MaterialCommunityIcons
-                  name="trash-can-outline"
-                  size={22}
-                  color="#d32f2f"
-                />
-              </Pressable>
-            </View>
-
-            <View style={styles.projectPillInfo}>
-              <MaterialCommunityIcons
-                name="calendar-start"
-                size={16}
-                color="#3d3d3d"
-              />
-              <Text style={styles.projectPillDate}>
-                Starting Date: {startDate}
-              </Text>
-            </View>
-
-            <View style={styles.projectPillInfo}>
-              <View
-                style={[
-                  styles.statusIndicator,
-                  projectStatus === "Active"
-                    ? styles.statusActiveBg
-                    : styles.statusInactiveBg,
-                ]}
-              >
-                <MaterialCommunityIcons
-                  name={
-                    projectStatus === "Active" ? "check-circle" : "alert-circle"
-                  }
+                  name="calendar-start"
                   size={16}
-                  color={projectStatus === "Active" ? "#2e7d32" : "#d32f2f"}
-                />
-              </View>
-              <Text
-                style={[
-                  styles.projectPillStatus,
-                  projectStatus === "Active"
-                    ? styles.statusActive
-                    : styles.statusInactive,
-                ]}
-              >
-                {projectStatus}
+                  color="#fff"
+                />{" "}
+                {startDate}
               </Text>
+
+              <View style={styles.statusRow}>
+                <View
+                  style={[
+                    styles.statusBadgeBox,
+                    { backgroundColor: statusStyle.bg },
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name={statusStyle.icon}
+                    size={18}
+                    color={statusStyle.textColor}
+                    style={{ marginRight: 6 }}
+                  />
+                  <Text
+                    style={[
+                      styles.statusText,
+                      { color: statusStyle.textColor },
+                    ]}
+                  >
+                    {projectStatus}
+                  </Text>
+                </View>
+                <Pressable
+                  onPress={handleDelete}
+                  style={styles.deleteBtnInline}
+                >
+                  <MaterialCommunityIcons
+                    name="trash-can-outline"
+                    size={22}
+                    color="red"
+                  />
+                </Pressable>
+              </View>
             </View>
           </View>
 
-          {/* Divider line between project info and cards */}
-          <View style={styles.divider} />
-
-          {/* Orange cards section inside the same white container */}
-          <View style={styles.cardsContainer}>
+          <View style={styles.cardsContainerBelowUShape}>
             <Card
               title="Manage Inventory"
               icon="warehouse"
@@ -215,128 +243,67 @@ const ProjectDashboard = ({  navigation }) => {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: "orange",
+    backgroundColor: "#f2f2f2",
   },
-  scrollContainer: {
-    paddingHorizontal: 24,
-    paddingTop: 16,
+  uShapeContainer: {
+    backgroundColor: "#ff9933",
     paddingBottom: 40,
-  },
-  header: {
-    marginBottom: 24,
+    borderBottomLeftRadius: 80,
+    borderBottomRightRadius: 80,
     alignItems: "center",
-    marginTop: StatusBar.currentHeight ? StatusBar.currentHeight + 10 : 30,
   },
-  heading: {
-    fontSize: 26,
+  uShapeCard: {
+    padding: 20,
+    marginTop: 40,
+    width: "90%",
+  },
+  projectTitle: {
+    fontSize: 24,
     fontWeight: "700",
-    color: "black",
-    marginBottom: 8,
+    color: "#fff",
+    textAlign: "center",
   },
-
-  // Expanded white card containing both project info and orange cards
-  expandedProjectCard: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-    overflow: "hidden",
-    marginTop: 30,
-  },
-
-  // Project info section - keeping your original design
-  projectPill: {
-    backgroundColor: "white",
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ffe8d4",
-  },
-  projectPillTopRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 12,
-  },
-  deleteButton: {
-    padding: 6,
-    borderRadius: 20,
-    backgroundColor: "#ffebee",
-  },
-  deleteButtonPressed: {
-    backgroundColor: "#ffcdd2",
-  },
-  projectPillName: {
-    color: "#0f4c75",
-    fontWeight: "700",
-    fontSize: 18,
-    flex: 1,
-  },
-  projectPillInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-  },
-  projectPillDate: {
-    color: "#5a5a5a",
-    fontWeight: "500",
+  projectDateCentered: {
+    marginTop: 10,
+    color: "#fff",
     fontSize: 14,
-    marginLeft: 8,
+    textAlign: "center",
   },
-  statusIndicator: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+  statusRow: {
+    marginTop: 12,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginRight: 8,
   },
-  statusActiveBg: {
-    backgroundColor: "#e8f5e9",
+  statusBadgeBox: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 16,
+    elevation:6,
   },
-  statusInactiveBg: {
-    backgroundColor: "#ffebee",
-  },
-  projectPillStatus: {
+  statusText: {
     fontWeight: "600",
     fontSize: 14,
   },
-  statusActive: {
-    color: "#2e7d32",
+  deleteBtnInline: {
+    marginLeft: 12,
+    padding: 4,
   },
-  statusInactive: {
-    color: "#d32f2f",
+  cardsContainerBelowUShape: {
+    paddingHorizontal: 20,
+    marginTop: 30,
   },
-
-  // Divider between sections
-  divider: {
-    height: 1,
-    backgroundColor: "#f0f0f0",
-    marginHorizontal: 16,
-  },
-
-  // Container for orange cards
-  cardsContainer: {
-    padding: 20,
-  },
-
-  // Card Styles (unchanged as requested)
   card: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#ff6700",
+    backgroundColor: "#ff9933",
     borderRadius: 16,
     paddingVertical: 20,
     paddingHorizontal: 18,
     marginBottom: 16,
-    shadowColor: "#0f4c75",
-    shadowOpacity: 0.45,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 12 },
-    elevation: 12,
+    elevation: 25,
   },
   iconContainer: {
     width: 56,

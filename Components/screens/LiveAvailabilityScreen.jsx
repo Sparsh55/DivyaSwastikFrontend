@@ -18,7 +18,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch } from "react-redux";
 import { setSelectedMaterial } from "../../redux/selectedMaterialSlice";
 import { useNavigation } from "@react-navigation/native";
-import ScreenWrapper from "../ScreenWrapper ";
+import ScreenWrapper from "../ScreenWrapper";
 
 const API_URL = "http://192.168.81.224:5000/api/materials";
 

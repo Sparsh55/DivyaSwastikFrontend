@@ -9,6 +9,7 @@ import {
   Image,
 } from "react-native";
 import { useSelector } from "react-redux";
+import Ionicons from "react-native-vector-icons/Ionicons";
 
 const Dashboard = ({ navigation }) => {
   const user = useSelector((state) => state.user.user);
@@ -61,11 +62,16 @@ const Dashboard = ({ navigation }) => {
           <Text style={styles.userName}>
             {user?.name || user?.username || "User"}
           </Text>
+          <View style={styles.onlineStatus}>
+            <View style={styles.greenDot} />
+            <Text style={styles.onlineText}>Online</Text>
+          </View>
           <Text style={styles.dateText}>
             {new Date().toLocaleDateString("en-IN", {
               weekday: "long",
               day: "numeric",
               month: "short",
+              year: "numeric",
             })}
           </Text>
         </View>
@@ -83,7 +89,7 @@ const Dashboard = ({ navigation }) => {
             >
               <Text style={styles.createButtonText}>Create new project</Text>
               <View style={styles.plusIcon}>
-                <Text style={styles.plusText}>+</Text>
+                <Ionicons name="add" size={22} color="#fff" />
               </View>
             </TouchableOpacity>
 
@@ -94,7 +100,7 @@ const Dashboard = ({ navigation }) => {
             >
               <Text style={styles.manageButtonText}>Manage projects</Text>
               <View style={styles.arrowIcon}>
-                <Text style={styles.arrowText}>→</Text>
+                <Ionicons name="arrow-forward" size={20} color="#fff" />
               </View>
             </TouchableOpacity>
           </View>
@@ -118,10 +124,10 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   dateText: {
-  fontSize: 16,
-  color: "#888",
-  marginTop: 30,
-},
+    fontSize: 16,
+    color: "#888",
+    marginTop: 30,
+  },
   iconCircle: {
     width: 90,
     height: 90,
@@ -151,10 +157,29 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   userName: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "bold",
     color: "#2c3e50",
     marginTop: 4,
+  },
+  onlineStatus: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 6,
+  },
+
+  greenDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: "#4caf50",
+    marginRight: 6,
+  },
+
+  onlineText: {
+    color: "#4caf50",
+    fontSize: 13,
+    fontWeight: "600",
   },
   content: {
     flex: 1,
@@ -175,7 +200,7 @@ const styles = StyleSheet.create({
     fontWeight: "400",
     marginBottom: 40,
     textAlign: "center",
-    marginLeft:12,
+    marginLeft: 12,
   },
   buttonContainer: {
     gap: 16,

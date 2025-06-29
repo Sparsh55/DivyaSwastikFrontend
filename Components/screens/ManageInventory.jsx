@@ -18,7 +18,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Toast from "react-native-toast-message";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import ScreenWrapper from "../ScreenWrapper ";
+import ScreenWrapper from "../ScreenWrapper";
 import { StatusBar } from "react-native";
 import { Linking } from "react-native";
 

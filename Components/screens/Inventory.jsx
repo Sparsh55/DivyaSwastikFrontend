@@ -7,10 +7,15 @@ import {
   Dimensions,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
+import { useFocusEffect } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
 
 const Inventory = ({ navigation }) => {
+  useFocusEffect(() => {
+    StatusBar.setBackgroundColor("#F9F9FC");
+    StatusBar.setBarStyle("dark-content");
+  });
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Inventory Management</Text>

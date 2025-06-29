@@ -17,7 +17,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import Toast from "react-native-toast-message";
-import ScreenWrapper from "../ScreenWrapper ";
+import ScreenWrapper from "../ScreenWrapper";
 import { StatusBar } from "react-native";
 
 const FILTER_OPTIONS = [

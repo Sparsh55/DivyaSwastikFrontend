@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import ScreenWrapper from "../ScreenWrapper ";
+import ScreenWrapper from "../ScreenWrapper";
 import Toast from "react-native-toast-message";
 
 const API_URL = "http://192.168.81.224:5000/api/attendance";
@@ -34,10 +34,14 @@ const SeeAttendanceScreen = () => {
       const data = await response.json();
 
       const formatted = data.map((emp) => {
-        const presentDays = emp.records.filter((r) => r.status === "Present").length;
+        const presentDays = emp.records.filter(
+          (r) => r.status === "Present"
+        ).length;
         const today = new Date().toISOString().split("T")[0];
         const todayRecord = emp.records.find((r) => r.date.startsWith(today));
-        const latestRecord = [...emp.records].sort((a, b) => new Date(b.date) - new Date(a.date))[0];
+        const latestRecord = [...emp.records].sort(
+          (a, b) => new Date(b.date) - new Date(a.date)
+        )[0];
 
         return {
           name: emp.name,

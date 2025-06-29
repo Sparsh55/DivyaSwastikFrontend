@@ -68,7 +68,7 @@ const LoginScreen = ({ navigation, route }) => {
   const handleSubmit = async () => {
     Vibration.vibrate(100);
     if (!username || !password) {
-      Alert.alert("Error", "Username and password are required");
+      Alert.alert("Validation Error", "Username and password are required");
       return;
     }
 

@@ -55,12 +55,13 @@ const AppNavigator = () => {
         <Stack.Screen
           name="CreateNewProject"
           component={CreateNewProject}
-          options={{ headerShown: false }}
+          options={{ headerShown: false, animation: "slide_from_bottom" }}
         />
         <Stack.Screen
           name="ManageProjects"
           component={ManageProjects}
           options={({ route }) => ({
+            animation: "slide_from_right",
             header: () => (
               <CustomHeader
                 title={route?.params?.title || "Manage Projects"}
@@ -71,7 +72,7 @@ const AppNavigator = () => {
         <Stack.Screen
           name="Projectdashboard"
           component={Projectdashboard}
-          options={{ headerShown: false }}
+          options={{ headerShown: false, animation: "slide_from_bottom" }}
         />
         <Stack.Screen
           name="AddUserScreen"

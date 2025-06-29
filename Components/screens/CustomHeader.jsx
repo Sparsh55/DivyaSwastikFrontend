@@ -1,48 +1,49 @@
-import { View, Text, SafeAreaView, Platform, StatusBar, TouchableOpacity } from 'react-native';
-import { useNavigation } from "@react-navigation/native";
+import React from 'react';
+import { View, Text, TouchableOpacity, Platform } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const CustomHeader = ({ title }) => {
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
 
   return (
-    <SafeAreaView
+    <View
+      style={{
+        backgroundColor: '#ff9933',
+        paddingTop: insets.top, // dynamic safe area padding
+        paddingBottom: 16,
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+      }}
+    >
+      {/* 🔙 Back Button */}
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
         style={{
-          backgroundColor: "#ff9933",
+          position: 'absolute',
+          left: 18,
+          top: insets.top + 13,
         }}
       >
-        <View
-          style={{
-            height: 70,
-            paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-            justifyContent: "center",
-            alignItems: "center",
-            position: "relative",
-          }}
-        >
-          {/* 🔙 Back Button */}
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={{ position: "absolute", left: 16, top: Platform.OS === 'android' ?  (StatusBar.currentHeight || 24) + 4 : 48,     }}
-          >
-            <Icon name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
+        <Icon name="arrow-back" size={24} color="#fff" />
+      </TouchableOpacity>
 
-          <Text
-            style={{
-              color: "#fff",
-              fontSize: 22,
-              fontWeight: "bold",
-              textAlign: "center",
-              marginBottom:10
-            }}
-          >
-            {title}
-          </Text>
-        </View>
-      </SafeAreaView>
+      <Text
+        style={{
+          color: '#fff',
+          fontSize: 22,
+          fontWeight: 'bold',
+          textAlign: 'center',
+          marginTop: 8,
+        }}
+      >
+        {title}
+      </Text>
+    </View>
   );
 };
-
 
 export default CustomHeader;

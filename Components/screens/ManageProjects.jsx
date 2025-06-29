@@ -17,6 +17,7 @@ import {
   KeyboardAvoidingView,
   TouchableWithoutFeedback,
   Keyboard,
+  Image,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
@@ -26,7 +27,7 @@ import moment from "moment";
 import { useDispatch } from "react-redux";
 import { setProject } from "../../redux/projectSlice";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import ScreenWrapper from '../../Components/ScreenWrapper '
+import ScreenWrapper from "../ScreenWrapper";
 import { useSelector } from "react-redux";
 
 const BASE_URL = "http://192.168.81.224:5000/api/projects";
@@ -131,7 +132,7 @@ const ManageProjects = () => {
       );
 
       const result = await response.json();
-      console.log('from line 134 manage project', result);
+      console.log("from line 134 manage project", result);
       if (result.success) {
         Toast.show({ type: "success", text1: "Status updated" });
         setModalVisible(false);
@@ -285,7 +286,14 @@ const ManageProjects = () => {
           </Text>
         </View>
       ) : filtered.length === 0 ? (
-        <Text style={styles.noDataText}>No projects found.</Text>
+        <View style={styles.noDataContainer}>
+          <Image
+            source={require("../../assets/cloud.png")} // <-- your PNG path
+            style={styles.noDataImage}
+            resizeMode="contain"
+          />
+          <Text style={styles.noDataText}>No projects found</Text>
+        </View>
       ) : (
         <FlatList
           data={filtered}
@@ -426,7 +434,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#eef3f7",
     padding: 16,
-    paddingTop: Platform.OS === "android" ? StatusBar.currentHeight + 16 : 16,
   },
   title: {
     fontSize: 24,
@@ -443,7 +450,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderColor: "#ccc",
     borderWidth: 1,
-    marginBottom: 16,
+    marginBottom: 10,
   },
   searchIcon: { marginRight: 8 },
   searchInput: { flex: 1, fontSize: 16, color: "#000" },
@@ -472,7 +479,7 @@ const styles = StyleSheet.create({
   statusBadge: {
     paddingHorizontal: 10,
     paddingVertical: 4,
-    borderRadius: 14,
+    borderRadius: 10,
     fontSize: 13,
     fontWeight: "bold",
     color: "#fff",
@@ -556,5 +563,20 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
     fontSize: 16,
+  },
+  noDataContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 40,
+    paddingHorizontal: 20,
+  },
+  noDataImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 16,
+  },
+  noDataText: {
+    fontSize: 16,
+    color: "#888",
   },
 });

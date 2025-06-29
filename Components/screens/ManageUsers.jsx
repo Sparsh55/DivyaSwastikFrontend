@@ -18,7 +18,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import Toast from "react-native-toast-message";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useNavigation } from "@react-navigation/native";
-import ScreenWrapper from "../ScreenWrapper ";
+import ScreenWrapper from "../ScreenWrapper";
 import { useSelector } from "react-redux";
 
 const ManageUsers = () => {
@@ -30,9 +30,12 @@ const ManageUsers = () => {
   const BASE_URL = "http://192.168.81.224:5000/api/users";
   const { currentProject } = useSelector((state) => state.project);
 
-  useEffect((currentProject) => {
-    fetchUsers();
-  }, [currentProject]);
+  useEffect(
+    (currentProject) => {
+      fetchUsers();
+    },
+    [currentProject]
+  );
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -47,14 +50,17 @@ const ManageUsers = () => {
         return;
       }
       if (!currentProject) {
-      throw new Error("No project selected");
-    }
-      const response = await fetch(`${BASE_URL}?projectId=${currentProject._id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-      });
+        throw new Error("No project selected");
+      }
+      const response = await fetch(
+        `${BASE_URL}?projectId=${currentProject._id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       const data = await response.json();
       const extractedUsers = Array.isArray(data.data.users)

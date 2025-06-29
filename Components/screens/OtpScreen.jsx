@@ -21,6 +21,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useDispatch } from "react-redux";
 import { setUserInfo } from "../../redux/userSlice";
 import otpImage from "../../assets/one-time-password.png";
+import { useFocusEffect } from "@react-navigation/native";
+import { StatusBar } from "react-native";
 
 const API_BASE_URL = "http://192.168.81.224:5000/api";
 
@@ -35,6 +37,10 @@ const OtpScreen = ({ navigation, route }) => {
   const inputsRef = useRef([]);
   const dispatch = useDispatch();
 
+  useFocusEffect(() => {
+      StatusBar.setBackgroundColor("#F9F9FC");
+      StatusBar.setBarStyle("dark-content");
+    });
   useEffect(() => {
     let interval;
     if (timerActive && timer > 0) {
@@ -83,7 +89,7 @@ const OtpScreen = ({ navigation, route }) => {
     Vibration.vibrate(100); 
     const enteredOtp = otp.join("");
     if (enteredOtp.length < 4) {
-      Alert.alert("Error", "Please enter all 4 digits");
+      Alert.alert("Validation Error", "Please enter all 4 digits");
       return;
     }
 
@@ -125,10 +131,7 @@ const OtpScreen = ({ navigation, route }) => {
   };
 
   return (
-    <KeyboardAvoidingView
-      style={{ flex: 1 }}
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 0}
+    <View style={{flex:1}} 
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
@@ -206,7 +209,7 @@ const OtpScreen = ({ navigation, route }) => {
           )}
         </ScrollView>
       </TouchableWithoutFeedback>
-    </KeyboardAvoidingView>
+    </View>
   );
 };
 
