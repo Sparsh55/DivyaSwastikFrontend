@@ -5,6 +5,7 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
+  StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
@@ -13,6 +14,7 @@ const { width } = Dimensions.get('window');
 const UserManagement = ({ navigation }) => {
   return (
     <View style={styles.container}>
+        <StatusBar backgroundColor="#F9F9FC" barStyle="dark-content" />
       <Text style={styles.title}>User Management</Text>
 
       <View style={styles.cardContainer}>

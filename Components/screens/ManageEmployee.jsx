@@ -13,6 +13,7 @@ import {
   Keyboard,
   Alert,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -167,88 +168,94 @@ const ManageEmployee = () => {
 
   return (
     <ScreenWrapper>
-      <StatusBar backgroundColor="#ff9933" barStyle="light-content" />
-      <View style={styles.filterRow}>
-        <Pressable
-          style={styles.filterTypeBtn}
-          onPress={() => setShowFilterModal(true)}
-        >
-          <Icon name="filter" size={18} color="#fff" />
-          <Text style={styles.filterTypeBtnText}>
-            {FILTER_OPTIONS.find((f) => f.key === filterType)?.label}
-          </Text>
-          <Icon name="chevron-down" size={18} color="#fff" />
-        </Pressable>
-      </View>
-
-      <TextInput
-        style={styles.filterInput}
-        placeholder={`Search by ${filterType}`}
-        value={searchText}
-        onChangeText={setSearchText}
-      />
-
-      {loading ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#ff9933" />
-          <Text style={{ marginTop: 10, color: "#555" }}>
-            Loading Employees...
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredEmployees}
-          keyExtractor={(item) => item._id}
-          renderItem={renderEmployeeCard}
-          ListEmptyComponent={
-            <Text style={{ textAlign: "center", marginTop: 20 }}>
-              No employees found.
+      <View style={{ flex: 1, paddingHorizontal: 16 }}>
+        <View style={styles.filterRow}>
+          <Pressable
+            style={styles.filterTypeBtn}
+            onPress={() => setShowFilterModal(true)}
+          >
+            <Icon name="filter" size={18} color="#fff" />
+            <Text style={styles.filterTypeBtnText}>
+              {FILTER_OPTIONS.find((f) => f.key === filterType)?.label}
             </Text>
-          }
-          contentContainerStyle={{ paddingBottom: 80 }}
+            <Icon name="chevron-down" size={18} color="#fff" />
+          </Pressable>
+        </View>
+
+        <TextInput
+          style={styles.filterInput}
+          placeholder={`Search by ${filterType}`}
+          value={searchText}
+          onChangeText={setSearchText}
         />
-      )}
 
-      <Modal
-        visible={showFilterModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowFilterModal(false)}
-      >
-        <TouchableWithoutFeedback
-          onPress={() => {
-            setShowFilterModal(false);
-            Keyboard.dismiss();
-          }}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              {FILTER_OPTIONS.map(({ key, label }) => (
-                <Pressable
-                  key={key}
-                  onPress={() => {
-                    setFilterType(key);
-                    setSearchText("");
-                    setShowFilterModal(false);
-                  }}
-                  style={styles.modalOption}
-                >
-                  <Text
-                    style={[
-                      styles.modalOptionText,
-                      filterType === key && { fontWeight: "bold" },
-                    ]}
-                  >
-                    {label}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
+        {loading ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color="#ff9933" />
+            <Text style={{ marginTop: 10, color: "#555" }}>
+              Loading Employees...
+            </Text>
           </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+        ) : (
+          <FlatList
+            data={filteredEmployees}
+            keyExtractor={(item) => item._id}
+            renderItem={renderEmployeeCard}
+            ListEmptyComponent={
+              <View style={styles.noDataContainer}>
+                <Image
+                  source={require("../../assets/cloud.png")}
+                  style={styles.noDataImage}
+                  resizeMode="contain"
+                />
+                <Text style={styles.noDataText}>No employees found</Text>
+              </View>
+            }
+            contentContainerStyle={{ paddingBottom: 80 }}
+          />
+        )}
 
-      <Toast />
+        <Modal
+          visible={showFilterModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowFilterModal(false)}
+        >
+          <TouchableWithoutFeedback
+            onPress={() => {
+              setShowFilterModal(false);
+              Keyboard.dismiss();
+            }}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
+                {FILTER_OPTIONS.map(({ key, label }) => (
+                  <Pressable
+                    key={key}
+                    onPress={() => {
+                      setFilterType(key);
+                      setSearchText("");
+                      setShowFilterModal(false);
+                    }}
+                    style={styles.modalOption}
+                  >
+                    <Text
+                      style={[
+                        styles.modalOptionText,
+                        filterType === key && { fontWeight: "bold" },
+                      ]}
+                    >
+                      {label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
+
+        <Toast />
+      </View>
     </ScreenWrapper>
   );
 };
@@ -261,8 +268,9 @@ const styles = StyleSheet.create({
   },
   filterRow: {
     flexDirection: "row",
-    marginVertical: 12,
+    marginVertical: 6,
     alignItems: "center",
+    marginTop:-8
   },
   filterTypeBtn: {
     flexDirection: "row",
@@ -298,6 +306,22 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 3,
+  },
+
+  noDataContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 40,
+    paddingHorizontal: 20,
+  },
+  noDataImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 16,
+  },
+  noDataText: {
+    fontSize: 16,
+    color: "#888",
   },
   cardHeader: {
     flexDirection: "row",

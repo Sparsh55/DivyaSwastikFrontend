@@ -81,6 +81,16 @@ const ManageAttendanceScreen = () => {
     if (!outTime) {
       return Toast.show({ type: "error", text1: "Please select out-time" });
     }
+    const selectedDateStr = date.toISOString().split("T")[0];
+    const inDate = new Date(`${selectedDateStr} ${inTime}`);
+    const outDate = new Date(`${selectedDateStr} ${outTime}`);
+
+    if (outDate < inDate) {
+      return Toast.show({
+        type: "error",
+        text1: "Out Time cannot be earlier than In Time",
+      });
+    }
     if (!date) {
       return Toast.show({ type: "error", text1: "Please select a date" });
     }

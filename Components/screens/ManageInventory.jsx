@@ -13,6 +13,7 @@ import {
   Keyboard,
   Alert,
   ActivityIndicator,
+  Image,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -128,17 +129,19 @@ const ManageInventory = () => {
     .filter((item) => {
       if (!searchText || filterType === "no_selection") return true;
       const value = searchText.toLowerCase();
+      const nameMatch = item?.name?.toLowerCase().includes(value);
+
       switch (filterType) {
         case "code":
-          return item.matCode?.toLowerCase().includes(value);
+          return item.matCode?.toLowerCase().includes(value) || nameMatch;
         case "date":
           return item.date
             ? new Date(item.date).toISOString().slice(0, 10).includes(value)
             : false;
         case "addedBy":
-          return item.addedBy?.toLowerCase().includes(value);
+          return item.addedBy?.toLowerCase().includes(value) || nameMatch;
         default:
-          return true;
+          return nameMatch;
       }
     });
 
@@ -208,6 +211,9 @@ const ManageInventory = () => {
         </View>
       </View>
       <Text style={styles.cardText}>
+        <Icon name="account-box" size={16} /> Name: {item.name || "N/A"}
+      </Text>
+      <Text style={styles.cardText}>
         <Icon name="scale" size={16} /> Quantity: {item.quantity}
       </Text>
       <Text style={styles.cardText}>
@@ -225,130 +231,136 @@ const ManageInventory = () => {
 
   return (
     <ScreenWrapper>
-      <StatusBar backgroundColor="#ff9933" barStyle="light-content" />
-      <View style={styles.filterRow}>
-        <Pressable
-          style={styles.filterTypeBtn}
-          onPress={() => setShowFilterModal(true)}
-        >
-          <Icon name="filter" size={18} color="#fff" />
-          <Text style={styles.filterTypeBtnText}>
-            {FILTER_OPTIONS.find((f) => f.key === filterType)?.label ||
-              "Select Filter"}
-          </Text>
-          <Icon name="chevron-down" size={18} color="#fff" />
-        </Pressable>
-      </View>
+      <View style={{ flex: 1, paddingHorizontal: 16 }}>
+        <View style={styles.filterRow}>
+          <Pressable
+            style={styles.filterTypeBtn}
+            onPress={() => setShowFilterModal(true)}
+          >
+            <Icon name="filter" size={18} color="#fff" />
+            <Text style={styles.filterTypeBtnText}>
+              {FILTER_OPTIONS.find((f) => f.key === filterType)?.label ||
+                "Select Filter"}
+            </Text>
+            <Icon name="chevron-down" size={18} color="#fff" />
+          </Pressable>
+        </View>
 
-      <View>
-        {filterType === "date" ? (
-          <View style={{ flexDirection: "row", alignItems: "center" }}>
+        <View>
+          {filterType === "date" ? (
+            <View style={{ flexDirection: "row", alignItems: "center" }}>
+              <TextInput
+                style={[styles.filterInput, { flex: 1 }]}
+                placeholder={getPlaceholder()}
+                value={searchText}
+                editable={false}
+              />
+              <TouchableOpacity
+                onPress={() => setShowDatePicker(true)}
+                style={{ marginLeft: 8, padding: 6 }}
+                activeOpacity={0.7}
+              >
+                <Icon name="calendar" size={24} color="#007bff" />
+              </TouchableOpacity>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={selectedDate || new Date()}
+                  mode="date"
+                  display="default"
+                  onChange={onChangeDate}
+                  maximumDate={new Date()}
+                />
+              )}
+            </View>
+          ) : (
             <TextInput
-              style={[styles.filterInput, { flex: 1 }]}
+              style={styles.filterInput}
               placeholder={getPlaceholder()}
               value={searchText}
-              editable={false}
+              onChangeText={setSearchText}
+              clearButtonMode="while-editing"
             />
-            <TouchableOpacity
-              onPress={() => setShowDatePicker(true)}
-              style={{ marginLeft: 8, padding: 6 }}
-              activeOpacity={0.7}
-            >
-              <Icon name="calendar" size={24} color="#007bff" />
-            </TouchableOpacity>
-            {showDatePicker && (
-              <DateTimePicker
-                value={selectedDate || new Date()}
-                mode="date"
-                display="default"
-                onChange={onChangeDate}
-                maximumDate={new Date()}
-              />
-            )}
+          )}
+        </View>
+
+        {loading ? (
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color="#ff9933" />
+            <Text style={{ marginTop: 10, color: "#555" }}>
+              Loading Records...
+            </Text>
           </View>
         ) : (
-          <TextInput
-            style={styles.filterInput}
-            placeholder={getPlaceholder()}
-            value={searchText}
-            onChangeText={setSearchText}
-            clearButtonMode="while-editing"
+          <FlatList
+            data={filteredMaterials}
+            keyExtractor={(item) => item._id.toString()}
+            renderItem={renderMaterialCard}
+            ListEmptyComponent={
+              <View style={styles.noDataContainer}>
+                <Image
+                  source={require("../../assets/cloud.png")} // <-- your PNG path
+                  style={styles.noDataImage}
+                  resizeMode="contain"
+                />
+                <Text style={styles.noDataText}>No material found</Text>
+              </View>
+            }
+            contentContainerStyle={{ paddingBottom: 80 }}
           />
         )}
-      </View>
 
-      {loading ? (
-        <View style={styles.loaderContainer}>
-          <ActivityIndicator size="large" color="#ff9933" />
-          <Text style={{ marginTop: 10, color: "#555" }}>
-            Loading Records...
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          data={filteredMaterials}
-          keyExtractor={(item) => item._id.toString()}
-          renderItem={renderMaterialCard}
-          ListEmptyComponent={
-            <Text style={{ textAlign: "center", marginTop: 20 }}>
-              No materials found.
-            </Text>
-          }
-          contentContainerStyle={{ paddingBottom: 80 }}
-        />
-      )}
-
-      {/* Filter Modal */}
-      <Modal
-        visible={showFilterModal}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setShowFilterModal(false)}
-      >
-        <TouchableWithoutFeedback
-          onPress={() => {
-            setShowFilterModal(false);
-            Keyboard.dismiss();
-          }}
+        {/* Filter Modal */}
+        <Modal
+          visible={showFilterModal}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setShowFilterModal(false)}
         >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Pressable
-                onPress={() => {
-                  setFilterType("no_selection");
-                  setSearchText("");
-                  setShowFilterModal(false);
-                }}
-                style={styles.modalOption}
-              >
-                <Text style={styles.modalOptionText}>No Selection</Text>
-              </Pressable>
-              {FILTER_OPTIONS.map(({ key, label }) => (
+          <TouchableWithoutFeedback
+            onPress={() => {
+              setShowFilterModal(false);
+              Keyboard.dismiss();
+            }}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.modalContent}>
                 <Pressable
-                  key={key}
                   onPress={() => {
-                    setFilterType(key);
+                    setFilterType("no_selection");
                     setSearchText("");
                     setShowFilterModal(false);
                   }}
                   style={styles.modalOption}
                 >
-                  <Text
-                    style={[
-                      styles.modalOptionText,
-                      filterType === key && { fontWeight: "bold" },
-                    ]}
-                  >
-                    {label}
-                  </Text>
+                  <Text style={styles.modalOptionText}>No Selection</Text>
                 </Pressable>
-              ))}
+                {FILTER_OPTIONS.map(({ key, label }) => (
+                  <Pressable
+                    key={key}
+                    onPress={() => {
+                      setFilterType(key);
+                      setSearchText("");
+                      setShowFilterModal(false);
+                    }}
+                    style={styles.modalOption}
+                  >
+                    <Text
+                      style={[
+                        styles.modalOptionText,
+                        filterType === key && { fontWeight: "bold" },
+                      ]}
+                    >
+                      {label}
+                    </Text>
+                  </Pressable>
+                ))}
+              </View>
             </View>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+          </TouchableWithoutFeedback>
+        </Modal>
 
-      <Toast />
+        <Toast />
+      </View>
     </ScreenWrapper>
   );
 };
@@ -373,8 +385,9 @@ const styles = StyleSheet.create({
   },
   filterRow: {
     flexDirection: "row",
-    marginVertical: 12,
+    marginVertical: 3,
     alignItems: "center",
+    marginTop:-8,
   },
   filterTypeBtn: {
     flexDirection: "row",
@@ -398,7 +411,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 1,
     borderColor: "#ccc",
-    marginTop: 10,
+    marginTop: 8,
   },
   card: {
     backgroundColor: "#fff",
@@ -410,6 +423,22 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 6,
     elevation: 3,
+  },
+
+  noDataContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 40,
+    paddingHorizontal: 20,
+  },
+  noDataImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 16,
+  },
+  noDataText: {
+    fontSize: 16,
+    color: "#888",
   },
   cardHeader: {
     flexDirection: "row",

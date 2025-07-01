@@ -23,6 +23,7 @@ import { setUserInfo } from "../../redux/userSlice";
 import otpImage from "../../assets/one-time-password.png";
 import { useFocusEffect } from "@react-navigation/native";
 import { StatusBar } from "react-native";
+import ScreenWrapper from "../ScreenWrapper";
 
 const API_BASE_URL = "http://192.168.81.224:5000/api";
 
@@ -38,7 +39,7 @@ const OtpScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
 
   useFocusEffect(() => {
-      StatusBar.setBackgroundColor("#F9F9FC");
+      StatusBar.setBackgroundColor("#fff");
       StatusBar.setBarStyle("dark-content");
     });
   useEffect(() => {
@@ -131,11 +132,12 @@ const OtpScreen = ({ navigation, route }) => {
   };
 
   return (
+    <ScreenWrapper statusBarColor="#ffffff" barStyle="dark-content">
     <View style={{flex:1}} 
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <ScrollView
-          contentContainerStyle={styles.container}
+          contentContainerStyle={[styles.container]}
           keyboardShouldPersistTaps="handled"
         >
           <TouchableOpacity
@@ -210,6 +212,7 @@ const OtpScreen = ({ navigation, route }) => {
         </ScrollView>
       </TouchableWithoutFeedback>
     </View>
+    </ScreenWrapper>
   );
 };
 

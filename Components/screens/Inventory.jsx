@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   Dimensions,
+  StatusBar,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import { useFocusEffect } from "@react-navigation/native";
@@ -12,12 +13,20 @@ import { useFocusEffect } from "@react-navigation/native";
 const { width } = Dimensions.get("window");
 
 const Inventory = ({ navigation }) => {
-  useFocusEffect(() => {
+  useFocusEffect(
+  useCallback(() => {
     StatusBar.setBackgroundColor("#F9F9FC");
     StatusBar.setBarStyle("dark-content");
-  });
+    return () => {
+      // Cleanup in case another screen overrides it and leaves it stuck
+      StatusBar.setBackgroundColor("#F9F9FC");
+      StatusBar.setBarStyle("dark-content");
+    };
+  }, [])
+);
   return (
     <View style={styles.container}>
+      <StatusBar backgroundColor="#F9F9FC" barStyle="dark-content" />
       <Text style={styles.title}>Inventory Management</Text>
 
       <View style={styles.cardContainer}>

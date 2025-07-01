@@ -6,12 +6,16 @@ import {
   FlatList,
   ActivityIndicator,
   TextInput,
+  Pressable,
+  Image,
   StatusBar,
+  Platform,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ScreenWrapper from "../ScreenWrapper";
 import Toast from "react-native-toast-message";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const API_URL = "http://192.168.81.224:5000/api/attendance";
 
@@ -19,53 +23,49 @@ const SeeAttendanceScreen = () => {
   const [attendanceData, setAttendanceData] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   useEffect(() => {
     fetchAttendance();
-  }, []);
+  }, [selectedDate]);
 
   const fetchAttendance = async () => {
     setLoading(true);
     try {
-      const token = await AsyncStorage.getItem("userToken");
-      const response = await fetch(`${API_URL}/grouped`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await fetch(`${API_URL}/grouped`);
       const data = await response.json();
 
-      const formatted = data.map((emp) => {
-        const presentDays = emp.records.filter(
-          (r) => r.status === "Present"
-        ).length;
-        const today = new Date().toISOString().split("T")[0];
-        const todayRecord = emp.records.find((r) => r.date.startsWith(today));
-        const latestRecord = [...emp.records].sort(
-          (a, b) => new Date(b.date) - new Date(a.date)
-        )[0];
+      if (!Array.isArray(data)) throw new Error("Unexpected format");
 
-        return {
-          name: emp.name,
-          employeeId: emp.employeeId,
-          status: todayRecord ? todayRecord.status : "Absent",
-          workedDays: presentDays,
-          inTime: todayRecord?.inTime || latestRecord?.inTime || "-",
-          outTime: todayRecord?.outTime || latestRecord?.outTime || "-",
-          work: todayRecord?.work || latestRecord?.work || "-",
-          phone: emp.phone || "-",
-          joinedDate: emp.joinedDate
-            ? new Date(emp.joinedDate).toLocaleDateString()
-            : "-",
-          project: emp.project || "-",
-        };
-      });
+      const selectedDateString = new Date(selectedDate).toDateString();
+
+      const formatted = data
+        .map((emp) => {
+          const dateRecord = emp.records.find(
+            (r) => new Date(r.date).toDateString() === selectedDateString
+          );
+          if (!dateRecord) return null;
+
+          const presentDays = emp.records.filter(
+            (r) => r.status === "Present"
+          ).length;
+
+          return {
+            name: emp.name,
+            employeeId: emp.employeeId,
+            status: dateRecord.status,
+            workedDays: presentDays,
+            inTime: dateRecord.inTime || "-",
+            outTime: dateRecord.outTime || "-",
+            work: dateRecord.work || "-",
+          };
+        })
+        .filter(Boolean);
 
       setAttendanceData(formatted);
     } catch (err) {
-      console.error("Error fetching attendance:", err);
-      Toast.show({
-        type: "error",
-        text1: "Failed to fetch attendance data",
-      });
+      Toast.show({ type: "error", text1: "Failed to fetch attendance" });
     } finally {
       setLoading(false);
     }
@@ -106,7 +106,6 @@ const SeeAttendanceScreen = () => {
           Worked Days: <Text style={styles.boldText}>{item.workedDays}</Text>
         </Text>
       </View>
-
       <View style={styles.detailRow}>
         <Icon name="clock-in" size={16} color="#555" />
         <Text style={styles.detailText}>
@@ -114,7 +113,6 @@ const SeeAttendanceScreen = () => {
           In: <Text style={styles.boldText}>{item.inTime}</Text>
         </Text>
       </View>
-
       <View style={styles.detailRow}>
         <Icon name="clock-out" size={16} color="#555" />
         <Text style={styles.detailText}>
@@ -122,36 +120,11 @@ const SeeAttendanceScreen = () => {
           Out: <Text style={styles.boldText}>{item.outTime}</Text>
         </Text>
       </View>
-
       <View style={styles.detailRow}>
         <Icon name="clipboard-text" size={16} color="#555" />
         <Text style={styles.detailText}>
           {" "}
           Work: <Text style={styles.boldText}>{item.work}</Text>
-        </Text>
-      </View>
-
-      <View style={styles.detailRow}>
-        <Icon name="calendar" size={16} color="#555" />
-        <Text style={styles.detailText}>
-          {" "}
-          Joined: <Text style={styles.boldText}>{item.joinedDate}</Text>
-        </Text>
-      </View>
-
-      <View style={styles.detailRow}>
-        <Icon name="briefcase" size={16} color="#555" />
-        <Text style={styles.detailText}>
-          {" "}
-          Project: <Text style={styles.boldText}>{item.project}</Text>
-        </Text>
-      </View>
-
-      <View style={styles.detailRow}>
-        <Icon name="phone" size={16} color="#555" />
-        <Text style={styles.detailText}>
-          {" "}
-          Phone: <Text style={styles.boldText}>{item.phone}</Text>
         </Text>
       </View>
     </View>
@@ -160,26 +133,34 @@ const SeeAttendanceScreen = () => {
   return (
     <ScreenWrapper>
       <StatusBar backgroundColor="#ff9933" barStyle="light-content" />
-      <View style={styles.container}>
-        <View style={styles.searchInputWrapper}>
-          <Icon
-            name="magnify"
-            size={20}
-            color="#888"
-            style={styles.searchIcon}
-          />
-          <TextInput
-            placeholder="Search by employee name"
-            style={styles.searchInput}
-            value={searchText}
-            onChangeText={setSearchText}
-            placeholderTextColor="#888"
-          />
+      <View style={{ flex: 1, paddingHorizontal: 16 }}>
+        <View style={styles.filterSection}>
+          <Text style={styles.filterLabel}>Filter by Date</Text>
+          <Pressable
+            style={styles.filterTypeBtn}
+            onPress={() => setShowDatePicker(true)}
+          >
+            <Icon name="calendar" size={18} color="#fff" />
+            <Text style={styles.filterTypeBtnText}>
+              {selectedDate.toLocaleDateString()}
+            </Text>
+          </Pressable>
         </View>
+
+        <TextInput
+          placeholder="Search by name"
+          value={searchText}
+          onChangeText={setSearchText}
+          style={styles.filterInput}
+          placeholderTextColor="#888"
+        />
 
         {loading ? (
           <View style={styles.loaderContainer}>
             <ActivityIndicator size="large" color="#007bff" />
+            <Text style={{ marginTop: 10, color: "#555" }}>
+              Loading Attendance...
+            </Text>
           </View>
         ) : (
           <FlatList
@@ -188,12 +169,27 @@ const SeeAttendanceScreen = () => {
             renderItem={renderItem}
             contentContainerStyle={{ paddingBottom: 80 }}
             ListEmptyComponent={
-              <Text
-                style={{ textAlign: "center", marginTop: 20, color: "#666" }}
-              >
-                No attendance records found.
-              </Text>
+              <View style={styles.noDataContainer}>
+                <Image
+                  source={require("../../assets/cloud.png")}
+                  style={styles.noDataImage}
+                  resizeMode="contain"
+                />
+                <Text style={styles.noDataText}>No attendance found</Text>
+              </View>
             }
+          />
+        )}
+
+        {showDatePicker && (
+          <DateTimePicker
+            value={selectedDate}
+            mode="date"
+            display={Platform.OS === "ios" ? "spinner" : "default"}
+            onChange={(event, date) => {
+              setShowDatePicker(false);
+              if (date) setSelectedDate(date);
+            }}
           />
         )}
       </View>
@@ -202,42 +198,58 @@ const SeeAttendanceScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f4f6fc",
-  },
   loaderContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  searchInputWrapper: {
+  filterRow: {
     flexDirection: "row",
+    marginVertical: 6,
     alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    paddingHorizontal: 12,
-    marginHorizontal: 3,
+    marginTop: -8,
+  },
+
+  filterSection: {
     marginTop: 10,
-    marginBottom: 10,
+    marginBottom: 6,
   },
-  searchIcon: {
-    marginRight: 8,
+  filterLabel: {
+    marginBottom: 6,
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#555",
+    marginLeft: 2,
   },
-  searchInput: {
-    flex: 1,
+  filterTypeBtn: {
+    flexDirection: "row",
+    backgroundColor: "#007bff",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 20,
+    alignItems: "center",
+  },
+  filterTypeBtnText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+    marginHorizontal: 6,
+  },
+  filterInput: {
+    backgroundColor: "#fff",
+    paddingHorizontal: 14,
     paddingVertical: 15,
     fontSize: 16,
-    color: "#000",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    marginTop: 10,
   },
   card: {
     backgroundColor: "#fff",
     borderRadius: 12,
     padding: 16,
     marginVertical: 6,
-    marginHorizontal: 3,
     shadowColor: "#000",
     shadowOpacity: 0.05,
     shadowOffset: { width: 0, height: 1 },
@@ -276,6 +288,21 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: 15,
     fontWeight: "700",
+  },
+  noDataContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 40,
+    paddingHorizontal: 20,
+  },
+  noDataImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 16,
+  },
+  noDataText: {
+    fontSize: 16,
+    color: "#888",
   },
 });
 

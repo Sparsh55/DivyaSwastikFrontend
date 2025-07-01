@@ -94,7 +94,7 @@ const ManageProjects = () => {
                 },
               });
               if (response.ok) {
-                Toast.show({ type: "success", text1: "Project deleted" });
+                Toast.show({ type: "success", text1: "Project deleted successfully" });
                 fetchProjects();
               } else {
                 throw new Error("Delete failed");
@@ -132,9 +132,8 @@ const ManageProjects = () => {
       );
 
       const result = await response.json();
-      console.log("from line 134 manage project", result);
       if (result.success) {
-        Toast.show({ type: "success", text1: "Status updated" });
+        Toast.show({ type: "success", text1: "Status updated successfully" });
         setModalVisible(false);
         fetchProjects();
       } else {
@@ -267,6 +266,7 @@ const ManageProjects = () => {
 
   return (
     <ScreenWrapper>
+      <View style={{ flex: 1, paddingHorizontal: 16 }}>
       <View style={styles.searchWrapper}>
         <Icon name="magnify" size={22} color="#555" style={styles.searchIcon} />
         <TextInput
@@ -422,6 +422,7 @@ const ManageProjects = () => {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+      </View>
     </ScreenWrapper>
   );
 };

@@ -8,7 +8,7 @@ import {
   ScrollView,
   Alert,
   Image,
-  Vibration
+  Vibration,
 } from "react-native";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 import * as DocumentPicker from "expo-document-picker";
@@ -27,6 +27,7 @@ export default function AddMaterialScreen() {
   const [date, setDate] = useState(new Date());
   const [document, setDocument] = useState(null);
   const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [name, setName] = useState("");
 
   const showDatePicker = () => setDatePickerVisibility(true);
   const hideDatePicker = () => setDatePickerVisibility(false);
@@ -55,7 +56,7 @@ export default function AddMaterialScreen() {
   const handleSubmit = async () => {
     Vibration.vibrate(100);
     if (isSubmitting) return; // Prevent double tap
-    if (!materialCode || !quantity || !date) {
+    if (!name || !materialCode || !quantity || !date) {
       Alert.alert("Validation Error", "Please fill all required fields.");
       return;
     }
@@ -66,6 +67,7 @@ export default function AddMaterialScreen() {
       const formData = new FormData();
 
       formData.append("matCode", materialCode);
+      formData.append("name", name);
       formData.append("quantity", quantity);
       formData.append("amount", amount);
       formData.append("addedBy", "admin");
@@ -141,6 +143,24 @@ export default function AddMaterialScreen() {
         <Text style={styles.title}>Add Material</Text>
       </View>
 
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Name</Text>
+        <View style={styles.inputWrapper}>
+          <Ionicons
+            name="pricetag-outline"
+            size={20}
+            color="#ff9933"
+            style={styles.inputIcon}
+          />
+          <TextInput
+            style={styles.input}
+            value={name}
+            onChangeText={setName}
+            placeholder="Enter Material Name"
+            placeholderTextColor="#888"
+          />
+        </View>
+      </View>
       {/* Material Code */}
       <View style={styles.inputContainer}>
         <Text style={styles.label}>Material Code</Text>
@@ -269,7 +289,7 @@ export default function AddMaterialScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 20,
-    paddingTop: 80,
+    paddingTop: 60,
     backgroundColor: "#F1F2F6",
     flexGrow: 1,
     position: "relative",
@@ -372,7 +392,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderRadius: 8,
     marginTop: 20,
-    elevation:6
+    elevation: 6,
   },
   submitText: {
     color: "#fff",

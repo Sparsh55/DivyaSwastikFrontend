@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   Alert,
   StatusBar,
+  Image,
 } from "react-native";
 import Toast from "react-native-toast-message";
 import Icon from "react-native-vector-icons/MaterialCommunityIcons";
@@ -70,8 +71,10 @@ const LiveAvailabilityScreen = () => {
             : "available";
 
         const fullDetails = groupedData.find((g) => g.matCode === matCode);
+        const matName = fullDetails?.documents?.[0]?.name || "N/A";
 
         return {
+          matName,
           matCode,
           totalAvailable: item.totalAvailable,
           totalConsumed,
@@ -171,6 +174,7 @@ const LiveAvailabilityScreen = () => {
           dispatch(
             setSelectedMaterial({
               matCode: item.matCode,
+              matName: item.matName,
               documents: item.documents,
             })
           );
@@ -198,6 +202,13 @@ const LiveAvailabilityScreen = () => {
             </View>
           </View>
 
+          <View style={styles.detailRow}>
+            <Icon name="cube-outline" size={16} color="#555" />
+            <Text style={styles.detailText}>
+              {" "}
+              Name: <Text style={styles.boldText}>{item.matName}</Text>
+            </Text>
+          </View>
           <View style={styles.detailRow}>
             <Icon name="warehouse" size={16} color="#555" />
             <Text style={styles.detailText}>
@@ -230,45 +241,52 @@ const LiveAvailabilityScreen = () => {
 
   return (
     <ScreenWrapper>
-      <StatusBar backgroundColor="#ff9933" barStyle="light-content" />
-      <View style={styles.container}>
-        <View style={styles.searchInputWrapper}>
-          <Icon
-            name="magnify"
-            size={20}
-            color="#888"
-            style={styles.searchIcon}
-          />
-          <TextInput
-            placeholder="Search by Material Code"
-            style={styles.searchInput}
-            value={searchText}
-            onChangeText={setSearchText}
-            placeholderTextColor="#888"
-          />
-        </View>
-
-        {loading ? (
-          <View style={styles.loaderContainer}>
-            <ActivityIndicator size="large" color="#007bff" />
+      <View style={{ flex: 1, paddingHorizontal: 16 }}>
+        <View style={styles.container}>
+          <View style={styles.searchInputWrapper}>
+            <Icon
+              name="magnify"
+              size={20}
+              color="#888"
+              style={styles.searchIcon}
+            />
+            <TextInput
+              placeholder="Search by Material Code"
+              style={styles.searchInput}
+              value={searchText}
+              onChangeText={setSearchText}
+              placeholderTextColor="#888"
+            />
           </View>
-        ) : (
-          <FlatList
-            data={filteredMaterials}
-            keyExtractor={(item) => item.matCode}
-            renderItem={renderItem}
-            refreshing={refreshing} // 👈 added
-            onRefresh={handleRefresh}
-            contentContainerStyle={{ paddingBottom: 80 }}
-            ListEmptyComponent={
-              <Text
-                style={{ textAlign: "center", marginTop: 20, color: "#666" }}
-              >
-                No materials found.
+
+          {loading ? (
+            <View style={styles.loaderContainer}>
+              <ActivityIndicator size="large" color="#ff9933" />
+              <Text style={{ marginTop: 10, color: "#555" }}>
+                Loading records...
               </Text>
-            }
-          />
-        )}
+            </View>
+          ) : (
+            <FlatList
+              data={filteredMaterials}
+              keyExtractor={(item) => item.matCode}
+              renderItem={renderItem}
+              refreshing={refreshing} // 👈 added
+              onRefresh={handleRefresh}
+              contentContainerStyle={{ paddingBottom: 80 }}
+              ListEmptyComponent={
+                <View style={styles.noDataContainer}>
+                  <Image
+                    source={require("../../assets/cloud.png")} // <-- your PNG path
+                    style={styles.noDataImage}
+                    resizeMode="contain"
+                  />
+                  <Text style={styles.noDataText}>No material found</Text>
+                </View>
+              }
+            />
+          )}
+        </View>
       </View>
     </ScreenWrapper>
   );
@@ -295,6 +313,28 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f4f6fc",
+  },
+
+  loaderContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
+  noDataContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 40,
+    paddingHorizontal: 20,
+  },
+  noDataImage: {
+    width: 100,
+    height: 100,
+    marginBottom: 16,
+  },
+  noDataText: {
+    fontSize: 16,
+    color: "#888",
   },
   loaderContainer: {
     flex: 1,
@@ -338,6 +378,12 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     marginBottom: 10,
     alignItems: "center",
+  },
+
+  matName: {
+    fontSize: 15,
+    color: "#555",
+    marginTop: 2,
   },
   matCode: {
     fontSize: 17,
