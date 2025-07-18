@@ -26,6 +26,8 @@ import CustomHeader from "../Components/screens/CustomHeader";
 import ManageEmployee from "../Components/screens/ManageEmployee";
 import ManageAttendance from "../Components/screens/ManageAttendance";
 import SeeAttendanceScreen from "../Components/screens/SeeAttendanceScreen";
+import StatsAndDprScreen from "../Components/screens/StatsAndDprScreen";
+
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -93,6 +95,18 @@ const AppNavigator = () => {
           name="TakeOutMaterialScreen"
           component={TakeOutMaterialScreen}
           options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="StatsAndDprScreen"
+          component={StatsAndDprScreen}
+           options={({ route }) => ({
+            header: () => (
+              <CustomHeader
+                title={route?.params?.title || "Statatics and DPR"}
+                backgroundColor="#4caf50"
+              />
+            ),
+          })}
         />
         <Stack.Screen
           name="UserManagment"

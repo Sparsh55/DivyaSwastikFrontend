@@ -4,14 +4,14 @@ import { useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-const CustomHeader = ({ title }) => {
+const CustomHeader = ({ title, backgroundColor}) => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
 
   return (
     <View
       style={{
-        backgroundColor: '#ff9933',
+       backgroundColor: backgroundColor || "#ff9933",
         paddingTop: insets.top, // dynamic safe area padding
         paddingBottom: 16,
         justifyContent: 'center',

@@ -19,6 +19,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Vibration } from "react-native";
+import { useFocusEffect } from '@react-navigation/native';
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("screen");
 
@@ -37,6 +38,23 @@ const LoginScreen = ({ navigation, route }) => {
       setTimeout(() => setOtpVerifiedMessage(""), 4000);
     }
   }, [route?.params?.otpVerified]);
+
+useFocusEffect(
+  React.useCallback(() => {
+    StatusBar.setBarStyle("light-content");
+    if (Platform.OS === "android") {
+      StatusBar.setBackgroundColor("#ff9933");
+    }
+
+    // Cleanup function (optional but good practice)
+    return () => {
+      StatusBar.setBarStyle("default");
+      if (Platform.OS === "android") {
+        StatusBar.setBackgroundColor("transparent");
+      }
+    };
+  }, [])
+);
 
   const pickImage = async () => {
     const permissionResult =

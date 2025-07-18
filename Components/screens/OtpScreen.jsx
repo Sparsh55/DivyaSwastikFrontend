@@ -1,19 +1,20 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Vibration } from "react-native";
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
+import { 
+  View, 
+  Text, 
+  TextInput, 
+  TouchableOpacity, 
+  StyleSheet, 
+  Alert, 
   ActivityIndicator,
-  KeyboardAvoidingView,
-  ScrollView,
+  ScrollView, 
+  Keyboard, 
+  TouchableWithoutFeedback, 
+  Image, 
+  Vibration,
+  Dimensions,
   Platform,
-  Keyboard,
-  TouchableWithoutFeedback,
-  Image,
+  StatusBar
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import axios from "axios";
@@ -22,14 +23,12 @@ import { useDispatch } from "react-redux";
 import { setUserInfo } from "../../redux/userSlice";
 import otpImage from "../../assets/one-time-password.png";
 import { useFocusEffect } from "@react-navigation/native";
-import { StatusBar } from "react-native";
-import ScreenWrapper from "../ScreenWrapper";
 
 const API_BASE_URL = "http://192.168.81.224:5000/api";
+const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const OtpScreen = ({ navigation, route }) => {
   const { userId = "", phoneNumber = "", otpId = "" } = route?.params || {};
-
   const [otp, setOtp] = useState(["", "", "", ""]);
   const [timer, setTimer] = useState(300);
   const [timerActive, setTimerActive] = useState(true);
@@ -38,10 +37,15 @@ const OtpScreen = ({ navigation, route }) => {
   const inputsRef = useRef([]);
   const dispatch = useDispatch();
 
-  useFocusEffect(() => {
-      StatusBar.setBackgroundColor("#fff");
+  useFocusEffect(
+    React.useCallback(() => {
       StatusBar.setBarStyle("dark-content");
-    });
+      if (Platform.OS === "android") {
+        StatusBar.setBackgroundColor("#ffffff");
+      }
+    }, [])
+  );
+
   useEffect(() => {
     let interval;
     if (timerActive && timer > 0) {
@@ -132,14 +136,11 @@ const OtpScreen = ({ navigation, route }) => {
   };
 
   return (
-    <ScreenWrapper statusBarColor="#ffffff" barStyle="dark-content">
-    <View style={{flex:1}} 
-    >
+    <View style={styles.screenContainer}>
+      <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
+      
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <ScrollView
-          contentContainerStyle={[styles.container]}
-          keyboardShouldPersistTaps="handled"
-        >
+        <View style={styles.container}>
           <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.goBack()}
@@ -148,159 +149,182 @@ const OtpScreen = ({ navigation, route }) => {
             <Ionicons name="chevron-back" size={30} color="#ff9933" />
           </TouchableOpacity>
 
-          <Image source={otpImage} style={styles.image} />
-          <Text style={styles.heading}>Verify OTP</Text>
-
-          <Text style={styles.info}>
-            We've sent an OTP to your registered mobile number.
-            {timerActive && ` It will expire in ${formatTime(timer)}.`} Please enter it below to continue.
-          </Text>
-
-          <View style={styles.otpContainer}>
-            {otp.map((digit, index) => (
-              <TextInput
-                key={index}
-                ref={(ref) => (inputsRef.current[index] = ref)}
-                style={styles.otpBox}
-                keyboardType="number-pad"
-                maxLength={1}
-                value={digit}
-                onChangeText={(text) => handleChange(text, index)}
-                textAlign="center"
-                editable={!isVerifying && !isResending}
-              />
-            ))}
-          </View>
-
-          <TouchableOpacity
-            style={[
-              styles.verifyButton,
-              isVerifying ? styles.verifyingButton : null,
-              isResending && styles.disabledButton,
-            ]}
-            onPress={verifyOtp}
-            disabled={isVerifying || isResending}
+          <ScrollView
+            contentContainerStyle={styles.scrollContent}
+            keyboardShouldPersistTaps="handled"
+            scrollEnabled={false}
           >
-            <Text style={styles.verifyButtonText}>
-              {isVerifying ? "Verifying..." : "Verify OTP"}
-            </Text>
-          </TouchableOpacity>
+            <View style={styles.content}>
+              <Image source={otpImage} style={styles.image} />
+              <Text style={styles.heading}>Verify OTP</Text>
 
-          <TouchableOpacity
-            onPress={resendOtp}
-            disabled={timerActive || isVerifying || isResending}
-          >
-            {isResending ? (
-              <ActivityIndicator color="#4287f5" />
-            ) : (
-              <Text
-                style={[
-                  styles.resendText,
-                  (timerActive || isVerifying || isResending) && styles.disabledText,
-                ]}
-              >
-                Resend OTP
+              <Text style={styles.info}>
+                We've sent an OTP to your registered mobile number.
+                {timerActive && ` It will expire in ${formatTime(timer)}.`} Please enter it below to continue.
               </Text>
-            )}
-          </TouchableOpacity>
 
-          {timerActive && (
-            <Text style={styles.timerText}>
-              You can resend OTP in {formatTime(timer)}
-            </Text>
-          )}
-        </ScrollView>
+              <View style={styles.otpContainer}>
+                {otp.map((digit, index) => (
+                  <TextInput
+                    key={index}
+                    ref={(ref) => (inputsRef.current[index] = ref)}
+                    style={styles.otpBox}
+                    keyboardType="number-pad"
+                    maxLength={1}
+                    value={digit}
+                    onChangeText={(text) => handleChange(text, index)}
+                    textAlign="center"
+                    editable={!isVerifying && !isResending}
+                  />
+                ))}
+              </View>
+
+              <View style={styles.buttonContainer}>
+                <TouchableOpacity
+                  style={[
+                    styles.verifyButton,
+                    isVerifying && styles.verifyingButton,
+                    (isVerifying || isResending) && styles.disabledButton
+                  ]}
+                  onPress={verifyOtp}
+                  disabled={isVerifying || isResending}
+                >
+                  <Text style={styles.verifyButtonText}>
+                    {isVerifying ? "Verifying..." : "Verify OTP"}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  onPress={resendOtp}
+                  disabled={timerActive || isVerifying || isResending}
+                  style={styles.resendButton}
+                >
+                  {isResending ? (
+                    <ActivityIndicator color="#4287f5" />
+                  ) : (
+                    <Text style={[
+                      styles.resendText,
+                      (timerActive || isVerifying || isResending) && styles.disabledText
+                    ]}>
+                      Resend OTP
+                    </Text>
+                  )}
+                </TouchableOpacity>
+
+                {timerActive && (
+                  <Text style={styles.timerText}>
+                    You can resend OTP in {formatTime(timer)}
+                  </Text>
+                )}
+              </View>
+            </View>
+          </ScrollView>
+        </View>
       </TouchableWithoutFeedback>
     </View>
-    </ScreenWrapper>
   );
 };
 
 const styles = StyleSheet.create({
+  screenContainer: {
+    flex: 1,
+    backgroundColor: '#ffffff'
+  },
   container: {
+    flex: 1,
+    paddingTop: Platform.OS === 'ios' ? 50 : 30,
+    paddingHorizontal: 20
+  },
+  scrollContent: {
     flexGrow: 1,
-    backgroundColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: 60,
-    paddingBottom: 40,
+    justifyContent: 'center'
+  },
+  content: {
+    alignItems: 'center',
+    paddingBottom: 30
   },
   backButton: {
-    position: "absolute",
-    top: 60,
+    position: 'absolute',
+    top: Platform.OS === 'ios' ? 50 : 50,
     left: 20,
-    zIndex: 10,
+    zIndex: 10
   },
   image: {
-    width: 70,
-    height: 80,
-    resizeMode: "contain",
-    marginBottom: 20,
+    width: 100,
+    height: 100,
+    resizeMode: 'contain',
+    marginBottom: 20
   },
   heading: {
     fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    color: "#333",
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#333'
   },
   info: {
     marginBottom: 30,
-    textAlign: "center",
-    color: "#666",
+    textAlign: 'center',
+    color: '#666',
     paddingHorizontal: 20,
+    fontSize: 16
   },
   otpContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: 40,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginBottom: 40
   },
   otpBox: {
     borderWidth: 1,
-    borderColor: "#999",
+    borderColor: '#999',
     width: 50,
     height: 50,
     borderRadius: 8,
     fontSize: 20,
-    fontWeight: "bold",
+    fontWeight: 'bold',
     marginHorizontal: 8,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: '#f5f5f5'
+  },
+  buttonContainer: {
+    width: '100%',
+    alignItems: 'center'
   },
   verifyButton: {
-    backgroundColor: "#ff9933",
+    backgroundColor: '#ff9933',
     paddingVertical: 14,
     paddingHorizontal: 70,
     borderRadius: 8,
     marginBottom: 20,
     minWidth: 200,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   verifyingButton: {
-    backgroundColor: "#28a745", // green while verifying
+    backgroundColor: '#28a745'
   },
   disabledButton: {
-    backgroundColor: "#ccc",
+    opacity: 0.7
   },
   verifyButtonText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 18,
-    fontWeight: "bold",
+    fontWeight: 'bold'
+  },
+  resendButton: {
+    marginBottom: 15
   },
   resendText: {
-    color: "#4287f5",
+    color: '#4287f5',
     fontSize: 16,
-    fontWeight: "600",
-    textDecorationLine: "underline",
+    fontWeight: '600',
+    textDecorationLine: 'underline'
   },
   disabledText: {
-    color: "#ccc",
+    color: '#ccc'
   },
   timerText: {
-    marginTop: 15,
     fontSize: 14,
-    color: "#888",
-  },
+    color: '#888'
+  }
 });
 
 export default OtpScreen;

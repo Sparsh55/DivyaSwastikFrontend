@@ -231,7 +231,7 @@ const ProjectDashboard = ({ navigation }) => {
               title="Statistics & DPR"
               icon="chart-bar"
               subtitle="View reports & performance"
-              onPress={() => {}}
+              onPress={() => navigation.navigate("StatsAndDprScreen")}
             />
           </View>
         </View>
