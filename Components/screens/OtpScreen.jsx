@@ -24,7 +24,7 @@ import { setUserInfo } from "../../redux/userSlice";
 import otpImage from "../../assets/one-time-password.png";
 import { useFocusEffect } from "@react-navigation/native";
 
-const API_BASE_URL = "http://192.168.81.224:5000/api";
+const API_BASE_URL = "http://192.168.133.224:5000/api";
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const OtpScreen = ({ navigation, route }) => {

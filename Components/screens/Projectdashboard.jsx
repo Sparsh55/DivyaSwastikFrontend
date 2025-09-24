@@ -16,7 +16,7 @@ import { useSelector } from "react-redux";
 import axios from "axios";
 import { useFocusEffect } from "@react-navigation/native";
 
-const API_BASE_URL = "http://192.168.81.224:5000/api";
+const API_BASE_URL = "http://192.168.133.224:5000/api";
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 const screenWidth = Dimensions.get("window").width;
 
@@ -194,16 +194,6 @@ const ProjectDashboard = ({ navigation }) => {
                     {projectStatus}
                   </Text>
                 </View>
-                <Pressable
-                  onPress={handleDelete}
-                  style={styles.deleteBtnInline}
-                >
-                  <MaterialCommunityIcons
-                    name="trash-can-outline"
-                    size={22}
-                    color="red"
-                  />
-                </Pressable>
               </View>
             </View>
           </View>

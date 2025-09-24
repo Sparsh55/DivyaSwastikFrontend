@@ -7,7 +7,7 @@ const FullImageScreen = ({ navigation }) => {
   const user = useSelector((state) => state.user.user);
 
   const profileImageUri = user?.image
-    ? `http://192.168.81.224:5000/${user.image.replace(/\\/g, '/')}`
+    ? `http://192.168.133.224:5000/${user.image.replace(/\\/g, '/')}`
     : null;
 
   return (

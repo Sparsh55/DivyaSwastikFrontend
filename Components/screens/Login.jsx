@@ -106,12 +106,9 @@ useFocusEffect(
       }
 
       const response = await fetch(
-        "http://192.168.81.224:5000/api/auth/login",
+        "http://192.168.133.224:5000/api/auth/login",
         {
           method: "POST",
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
           body: formData,
         }
       );

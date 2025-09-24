@@ -29,7 +29,7 @@ const Dashboard = ({ navigation }) => {
   const [isModalVisible, setModalVisible] = useState(false);
 
   const profileImageUri = user?.image
-    ? `http://192.168.81.224:5000/${user.image.replace(/\\/g, "/")}`
+    ? `http://192.168.133.224:5000/${user.image.replace(/\\/g, "/")}`
     : null;
 
   const handleCreateProject = () => navigation.navigate("CreateNewProject");
@@ -111,13 +111,14 @@ const Dashboard = ({ navigation }) => {
             <View style={{ position: "absolute", top: 50, right: 20 }}>
               <Menu>
                 <MenuTrigger>
-                  <AntDesign name="ellipsis1" size={24} color="#333" />
+                  <AntDesign name="setting" size={23} color="#333" />
                 </MenuTrigger>
                 <MenuOptions
                   customStyles={{
                     optionsContainer: {
                       height: 50, // ⬅️ Increase this value as needed
                       padding: 10,
+                      borderRadius: 20,
                     },
                   }}
                 >

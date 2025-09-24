@@ -19,7 +19,7 @@ import { useDispatch } from "react-redux";
 import { setProject } from "../../redux/projectSlice";
 import { Vibration } from "react-native";
 
-const API_BASE_URL = "http://192.168.81.224:5000/api/projects";
+const API_BASE_URL = "http://192.168.133.224:5000/api/projects";
 
 const CreateNewProject = () => {
   const navigation = useNavigation();

@@ -30,7 +30,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import ScreenWrapper from "../ScreenWrapper";
 import { useSelector } from "react-redux";
 
-const BASE_URL = "http://192.168.81.224:5000/api/projects";
+const BASE_URL = "http://192.168.133.224:5000/api/projects";
 
 const ManageProjects = () => {
   const dispatch = useDispatch();
