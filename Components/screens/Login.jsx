@@ -14,12 +14,12 @@ import {
   ScrollView,
   StatusBar,
   Dimensions,
+  Vibration,
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import * as ImagePicker from "expo-image-picker";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { Vibration } from "react-native";
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect } from "@react-navigation/native";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("screen");
 
@@ -39,22 +39,21 @@ const LoginScreen = ({ navigation, route }) => {
     }
   }, [route?.params?.otpVerified]);
 
-useFocusEffect(
-  React.useCallback(() => {
-    StatusBar.setBarStyle("light-content");
-    if (Platform.OS === "android") {
-      StatusBar.setBackgroundColor("#ff9933");
-    }
-
-    // Cleanup function (optional but good practice)
-    return () => {
-      StatusBar.setBarStyle("default");
+  useFocusEffect(
+    React.useCallback(() => {
+      StatusBar.setBarStyle("light-content");
       if (Platform.OS === "android") {
-        StatusBar.setBackgroundColor("transparent");
+        StatusBar.setBackgroundColor("#ff9933");
       }
-    };
-  }, [])
-);
+
+      return () => {
+        StatusBar.setBarStyle("default");
+        if (Platform.OS === "android") {
+          StatusBar.setBackgroundColor("#ff9933");
+        }
+      };
+    }, [])
+  );
 
   const pickImage = async () => {
     const permissionResult =
@@ -138,16 +137,22 @@ useFocusEffect(
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <StatusBar barStyle="light-content" backgroundColor="#ff9933" />
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#ffffff" }}>
+      {/* Top safe area overlay with orange */}
+      <View style={{ height: Platform.OS === "ios" ? 44 : 0, backgroundColor: "#ff9933" }} />
+  <StatusBar
+    barStyle="light-content"
+    backgroundColor="#ff9933" // Android only
+  />
+
       <KeyboardAvoidingView
         style={{ flex: 1 }}
         behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 0}
       >
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View style={styles.container}>
-            <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, backgroundColor: "#ff9933" }}>
+            {/* HEADER */}
+            <View style={styles.headerContainer}>
               <View style={styles.header}>
                 <View style={styles.logoContainer}>
                   <Image
@@ -158,125 +163,120 @@ useFocusEffect(
                 </View>
                 <Text style={styles.tagline}>#We Care</Text>
               </View>
+            </View>
 
-              <View style={styles.card}>
-                <ScrollView
-                  showsVerticalScrollIndicator={false}
-                  contentContainerStyle={{ paddingBottom: 40 }}
-                  keyboardShouldPersistTaps="handled"
-                >
-                  <Text style={styles.title}>Welcome Back!</Text>
-                  <Text style={styles.subtitle}>
-                    Please sign in to your account.
-                  </Text>
+            {/* WHITE CARD */}
+            <View style={styles.card}>
+              <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={{ paddingBottom: 40 }}
+                keyboardShouldPersistTaps="handled"
+              >
+                <Text style={styles.title}>Welcome Back!</Text>
+                <Text style={styles.subtitle}>
+                  Please sign in to your account.
+                </Text>
 
-                  <View style={styles.form}>
-                    <View style={styles.inputGroup}>
-                      <Text style={styles.label}>Username *</Text>
-                      <View style={styles.inputIconContainer}>
-                        <Ionicons
-                          name="person"
-                          size={22}
-                          color="#ff9933"
-                          style={styles.inputIcon}
-                        />
-                        <TextInput
-                          style={styles.inputWithIcon}
-                          placeholder="Enter your username"
-                          value={username}
-                          onChangeText={setUsername}
-                          autoCapitalize="none"
-                        />
-                      </View>
+                <View style={styles.form}>
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>Username *</Text>
+                    <View style={styles.inputIconContainer}>
+                      <Ionicons
+                        name="person"
+                        size={22}
+                        color="#ff9933"
+                        style={styles.inputIcon}
+                      />
+                      <TextInput
+                        style={styles.inputWithIcon}
+                        placeholder="Enter your username"
+                        value={username}
+                        onChangeText={setUsername}
+                        autoCapitalize="none"
+                      />
                     </View>
+                  </View>
 
-                    <View style={styles.inputGroup}>
-                      <Text style={styles.label}>Password *</Text>
-                      <View style={styles.inputIconContainer}>
-                        <Ionicons
-                          name="lock-closed"
-                          size={22}
-                          color="#ff9933"
-                          style={styles.inputIcon}
-                        />
-                        <TextInput
-                          style={styles.inputWithIcon}
-                          placeholder="Enter your password"
-                          secureTextEntry={!showPassword}
-                          value={password}
-                          onChangeText={setPassword}
-                        />
-                        <TouchableOpacity
-                          onPress={() => setShowPassword(!showPassword)}
-                        >
-                          <Ionicons
-                            name={showPassword ? "eye-off" : "eye"}
-                            size={22}
-                            color="#ff9933"
-                          />
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-
-                    <View style={styles.inputGroup}>
-                      <Text style={styles.label}>
-                        Profile Picture (optional)
-                      </Text>
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>Password *</Text>
+                    <View style={styles.inputIconContainer}>
+                      <Ionicons
+                        name="lock-closed"
+                        size={22}
+                        color="#ff9933"
+                        style={styles.inputIcon}
+                      />
+                      <TextInput
+                        style={styles.inputWithIcon}
+                        placeholder="Enter your password"
+                        secureTextEntry={!showPassword}
+                        value={password}
+                        onChangeText={setPassword}
+                      />
                       <TouchableOpacity
-                        onPress={pickImage}
-                        style={styles.imagePicker}
+                        onPress={() => setShowPassword(!showPassword)}
                       >
-                        {profilePicture ? (
-                          <>
-                            <View style={styles.imagePreviewWrapper}>
-                              <Image
-                                source={{ uri: profilePicture }}
-                                style={styles.profileImage}
-                              />
-                              <TouchableOpacity
-                                onPress={removeProfilePicture}
-                                style={styles.removeImageButton}
-                              >
-                                <Ionicons
-                                  name="close-circle"
-                                  size={20}
-                                  color="#ff4444"
-                                />
-                              </TouchableOpacity>
-                              <Text style={styles.imagePickerText}>Change</Text>
-                            </View>
-                          </>
-                        ) : (
-                          <>
-                            <Ionicons
-                              name="camera"
-                              size={20}
-                              color="#ff9933"
-                              style={{ marginRight: 8 }}
-                            />
-                            <Text style={styles.imagePickerText}>
-                              Choose Photo
-                            </Text>
-                          </>
-                        )}
+                        <Ionicons
+                          name={showPassword ? "eye-off" : "eye"}
+                          size={22}
+                          color="#ff9933"
+                        />
                       </TouchableOpacity>
                     </View>
+                  </View>
 
-                    {otpVerifiedMessage !== "" && (
-                      <Text style={styles.otpSuccess}>
-                        {otpVerifiedMessage}
-                      </Text>
-                    )}
-
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.label}>Profile Picture (optional)</Text>
                     <TouchableOpacity
-                      style={styles.button}
-                      onPress={handleSubmit}
+                      onPress={pickImage}
+                      style={styles.imagePicker}
                     >
-                      <Text style={styles.buttonText}>Submit</Text>
+                      {profilePicture ? (
+                        <View style={styles.imagePreviewWrapper}>
+                          <Image
+                            source={{ uri: profilePicture }}
+                            style={styles.profileImage}
+                          />
+                          <TouchableOpacity
+                            onPress={removeProfilePicture}
+                            style={styles.removeImageButton}
+                          >
+                            <Ionicons
+                              name="close-circle"
+                              size={20}
+                              color="#ff4444"
+                            />
+                          </TouchableOpacity>
+                          <Text style={styles.imagePickerText}>Change</Text>
+                        </View>
+                      ) : (
+                        <>
+                          <Ionicons
+                            name="camera"
+                            size={20}
+                            color="#ff9933"
+                            style={{ marginRight: 8 }}
+                          />
+                          <Text style={styles.imagePickerText}>
+                            Choose Photo
+                          </Text>
+                        </>
+                      )}
                     </TouchableOpacity>
                   </View>
-                </ScrollView>
-              </View>
+
+                  {otpVerifiedMessage !== "" && (
+                    <Text style={styles.otpSuccess}>{otpVerifiedMessage}</Text>
+                  )}
+
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={handleSubmit}
+                  >
+                    <Text style={styles.buttonText}>Submit</Text>
+                  </TouchableOpacity>
+                </View>
+              </ScrollView>
             </View>
           </View>
         </TouchableWithoutFeedback>
@@ -288,10 +288,6 @@ useFocusEffect(
 export default LoginScreen;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#ff9933",
-  },
   header: {
     alignItems: "center",
     paddingTop: 40,
@@ -319,13 +315,17 @@ const styles = StyleSheet.create({
   },
   card: {
     flex: 1,
-    minHeight: SCREEN_HEIGHT * 0.7,
     backgroundColor: "white",
     borderTopLeftRadius: 30,
     borderTopRightRadius: 30,
     padding: 30,
-    marginTop: -10,
+    marginTop: -20,
   },
+
+  headerContainer: {
+    backgroundColor: "#ff9933", // Orange background only for header
+  },
+
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -406,7 +406,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#bbb",
   },
-
   imagePreviewWrapper: {
     flexDirection: "row",
     alignItems: "center",
@@ -416,7 +415,7 @@ const styles = StyleSheet.create({
   removeImageButton: {
     position: "absolute",
     top: -4,
-    left: 28, // Keep it *inside* the image
+    left: 28,
     backgroundColor: "#fff",
     borderRadius: 10,
     zIndex: 2,

@@ -20,26 +20,24 @@ const LandingScreen = () => {
   const scrollX = useRef(new Animated.Value(0)).current;
   const carouselRef = useRef(null);
 
-  // Carousel data
   const carouselData = [
     {
       id: 1,
-      image: require("../../assets/At the office-rafiki.png"), // Replace with your image/gif
+      image: require("../../assets/At the office-rafiki.png"),
       text: "Keep track of your inventory in real-time and reduce material wastage.",
     },
     {
       id: 2,
-      image: require("../../assets/Time management-pana.png"), // Replace with your image/gif
+      image: require("../../assets/Time management-pana.png"),
       text: "Manage employee attendance, daily logs, and salaries with ease.",
     },
     {
       id: 3,
-      image: require("../../assets/Collab-pana.png"), // Replace with your image/gif
+      image: require("../../assets/Collab-pana.png"),
       text: "Oversee projects efficiently and collaborate seamlessly with your team.",
     },
   ];
 
-  // Auto slide every 3 seconds
   useEffect(() => {
     const interval = setInterval(() => {
       const nextIndex = (currentIndex + 1) % carouselData.length;
@@ -87,7 +85,6 @@ const LandingScreen = () => {
           )}
         />
 
-        {/* Dots Indicator */}
         <View style={styles.dotsContainer}>
           {carouselData.map((_, index) => {
             const opacity = scrollX.interpolate({
@@ -103,31 +100,31 @@ const LandingScreen = () => {
             return (
               <Animated.View
                 key={index}
-                style={[
-                  styles.dot,
-                  { opacity },
-                  currentIndex === index && styles.activeDot,
-                ]}
+                style={[styles.dot, { opacity }, currentIndex === index && styles.activeDot]}
               />
             );
           })}
         </View>
 
-        {/* Text that changes with slides */}
         <Text style={styles.slideText}>{carouselData[currentIndex].text}</Text>
       </View>
 
       {/* Bottom Half - Get Started Button */}
       <View style={styles.buttonContainer}>
         <Pressable
-          style={({ pressed }) => [
-            styles.button,
-            pressed && styles.buttonPressed,
-          ]}
+          style={({ pressed }) => [styles.button, pressed && styles.buttonPressed]}
           onPress={handleGetStarted}
         >
           <Text style={styles.buttonText}>Get Started</Text>
         </Pressable>
+      </View>
+
+      {/* Footer */}
+      <View style={styles.footerContainer}>
+        <Text style={styles.footerText}>
+          Designed & Developed by Sparsh Saxena{'\n'}
+          Email: sparshsaxena9654@gmail.com
+        </Text>
       </View>
     </SafeAreaView>
   );
@@ -192,11 +189,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: -40,
-    // Simulated outer shadow for 3D effect
     shadowColor: "#000",
     shadowOffset: { width: 2, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    shadowOpacity: 0.8,
+    shadowRadius: 8,
     elevation: 6,
   },
   buttonPressed: {
@@ -210,6 +206,19 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 18,
     fontWeight: "700",
+  },
+  footerContainer: {
+    position: "absolute",
+    bottom: 200,
+    width: "100%",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  footerText: {
+    fontSize: 12,
+    color: "#555",
+    textAlign: "center",
+    fontStyle: "italic",
   },
 });
 
